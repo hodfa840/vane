@@ -2,7 +2,7 @@
   <img src="assets/vane_overview.png" width="820" alt="VANE overview">
 </p>
 
-<h1 align="center">🧭 VANE</h1>
+<h1 align="center">🌬️ VANE</h1>
 <h3 align="center">Detecting LLM Reasoning Failures via Geometric Trajectory Analysis</h3>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 ---
 
-🧭 **VANE** (**V**elocity, **A**cceleration, and **N**onlinearity **E**stimation) is a lightweight, training-free framework for predicting whether an LLM's chain-of-thought reasoning will produce a correct answer — using only the geometry of hidden-state trajectories across transformer layers.
+🌬️ **VANE** (**V**elocity, **A**cceleration, and **N**onlinearity **E**stimation) is a lightweight, training-free framework for predicting whether an LLM's chain-of-thought reasoning will produce a correct answer — using only the geometry of hidden-state trajectories across transformer layers.
 
 > 💡 **Key insight:** When a model reasons incorrectly, its internal representations follow geometrically unstable trajectories — exhibiting higher curvature, jerk, and geodesic deviation compared to correct reasoning paths.
 
@@ -27,59 +27,81 @@
 
 ## 📊 Key Results
 
-### Per-Layer Curvature Profiles: Correct vs Incorrect Reasoning
+### Per-Metric Failure Detection AUROC
 
 <p align="center">
-  <img src="assets/fig_layer_profiles.png" width="780" alt="Per-layer curvature profiles across three models">
+  <img src="assets/fig_metric_comparison.png" width="700" alt="Per-metric AUROC across three models">
 </p>
 
-<p align="center"><em>Incorrect reasoning (🔴 red) consistently shows higher Frenet–Serret curvature than correct reasoning (🔵 blue) across all three model families. Bottom row: the difference (Incorrect − Correct) is positive throughout most layers.</em></p>
+<p align="center"><em>Every VANE trajectory metric individually outperforms log-probability and static representation baselines. VANE (combined) achieves the highest AUROC across all three model families.</em></p>
 
-### 🏆 VANE Outperforms Log-Probability at Every Coverage Level
+### 3D PCA Trajectories
 
 <p align="center">
-  <img src="assets/fig_selective_prediction.png" width="700" alt="Selective prediction: VANE vs log-probability">
+  <img src="assets/fig1_pca_trajectory.png" width="500" alt="3D PCA trajectory">
 </p>
 
-<p align="center"><em>Left: VANE selection monotonically improves accuracy as coverage decreases. Right: Log-probability selection can actually <b>decrease</b> accuracy below baseline — it is anti-correlated with correctness on Llama-3-8B.</em></p>
+<p align="center"><em>Same GSM8K question answered by two models. Correct reasoning (blue, Ministral-8B) follows a smooth, directed path; incorrect reasoning (red, Llama-3-8B) exhibits geometric turbulence.</em></p>
 
-### 📈 Accuracy Gain Over Log-Probability
+### Per-Layer Curvature Profiles
 
 <p align="center">
-  <img src="assets/fig_coverage_gain.png" width="520" alt="Coverage gain: VANE advantage over log-prob">
+  <img src="assets/fig_layer_diff.png" width="780" alt="Per-layer curvature profiles">
 </p>
 
-<p align="center"><em>VANE's advantage over log-probability selection grows consistently as coverage decreases, reaching up to +23.7pp on Llama-3-8B at 50% coverage.</em></p>
+<p align="center"><em>Incorrect reasoning (red) consistently shows higher Frenet–Serret curvature than correct reasoning (blue). Bottom row: the difference (Incorrect − Correct) is positive through most layers.</em></p>
 
-### 🔬 VANE Score Distributions
+### Selective Prediction
 
 <p align="center">
-  <img src="assets/fig_score_distributions.png" width="780" alt="VANE P(correct) score distributions">
+  <img src="assets/fig3_selective_prediction.png" width="700" alt="Selective prediction curves">
 </p>
 
-<p align="center"><em>VANE's P(correct) separates correct (🔵) and incorrect (🔴) samples with KS = 1.000 (p < 0.001) across all three models.</em></p>
+<p align="center"><em>Left: VANE accuracy rises monotonically with selectivity. Right: log-prob accuracy <b>decreases</b> on Llama and Ministral — it selects confidently wrong answers.</em></p>
 
-### 🧪 Ablation: Per-Metric AUROC
+### VANE Score Distributions
 
 <p align="center">
-  <img src="assets/fig_auroc_bar.png" width="700" alt="AUROC bar chart: VANE vs baselines">
+  <img src="assets/fig_vane_score_dist.png" width="780" alt="VANE score distributions">
 </p>
 
-<p align="center"><em>Every VANE trajectory metric individually outperforms log-probability and static representation baselines. The full VANE classifier achieves the highest AUROC.</em></p>
+<p align="center"><em>VANE's P(correct) cleanly separates correct (blue) and incorrect (red) samples across all three models (KS = 1.0, p < 0.001).</em></p>
+
+### Accuracy Gain Over Log-Probability
+
+<p align="center">
+  <img src="assets/fig_coverage_gain.png" width="520" alt="Coverage gain">
+</p>
+
+<p align="center"><em>VANE's advantage over log-prob grows monotonically with selectivity, reaching +23.7pp on Llama-3-8B at 50% coverage.</em></p>
 
 ## 📐 The Five VANE Metrics
 
-Given hidden states $\mathbf{h}_\ell \in \mathbb{R}^d$ at each transformer layer $\ell = 1, \dots, L$, we define layer-wise velocity vectors $\Delta_\ell = \mathbf{h}_{\ell+1} - \mathbf{h}_\ell$ and unit tangents $\hat{T}_\ell = \Delta_\ell / \lVert\Delta_\ell\rVert$:
+Let $h_\ell^{(t)} \in \mathbb{R}^d$ denote the hidden state at layer $\ell$ for generated token $t$. Define the layer-wise displacement and unit tangent:
 
-| # | Metric | Definition | Intuition |
-|:-:|:---|:---|:---|
-| 1 | 🌀 **Curvature** | $\kappa_\ell = \lVert \hat{T}_{\ell+1} - \hat{T}_\ell \rVert$ | Rate of directional change — sharp turns signal semantic shifts |
-| 2 | ⚡ **Jerk** | $J_\ell = \lVert \Delta_{\ell+1} - \Delta_\ell \rVert$ | Acceleration magnitude — high values indicate chaotic trajectory |
-| 3 | 🏃 **Velocity** | $v_\ell = \lVert \Delta_\ell \rVert$ | Step-size magnitude between consecutive layers |
-| 4 | 🛤️ **Geodesic Dev** | $\mathrm{dev}_\ell = \frac{\lVert \mathbf{h}_\ell - \mathrm{lerp}(\mathbf{h}_0, \mathbf{h}_L, \ell/L) \rVert}{\lVert \mathbf{h}_L - \mathbf{h}_0 \rVert}$ | Normalised distance from straight-line chord — path efficiency |
-| 5 | 🔗 **Token Coherence** | $1 - \cos(\hat{T}_\ell^{(t)},\, \bar{T}_\ell)$ | How much individual token directions disagree at each layer |
+$$\Delta_\ell^{(t)} = h_{\ell+1}^{(t)} - h_\ell^{(t)}, \qquad T_\ell^{(t)} = \frac{\Delta_\ell^{(t)}}{\|\Delta_\ell^{(t)}\|}$$
 
-Each metric produces a per-layer profile aggregated over tokens via three windows: **max** (worst-case), **mean** (average), and **ans** (answer region).
+**1. Velocity** — step-size magnitude between consecutive layers:
+
+$$V_\ell = \|\Delta_\ell^{(t)}\|$$
+
+**2. Curvature** — Frenet–Serret curvature, rate of change of direction (arc-length normalised):
+
+$$\kappa_\ell = \|T_{\ell+1}^{(t)} - T_\ell^{(t)}\|$$
+
+**3. Jerk** — acceleration magnitude, high values indicate chaotic trajectory:
+
+$$J_\ell = \|\Delta_{\ell+1}^{(t)} - \Delta_\ell^{(t)}\|$$
+
+**4. Geodesic Deviation** — normalised distance from the straight chord $h_0 \to h_L$:
+
+$$G_\ell = \frac{\|h_\ell - (h_0 + \frac{\ell}{L-1}(h_L - h_0))\|}{\|h_L - h_0\|}$$
+
+**5. Token Coherence** — per-layer directional agreement across generated tokens:
+
+$$C_\ell = 1 - \cos\!\left(T_\ell^{(t)},\; \bar{T}_\ell\right), \qquad \bar{T}_\ell = \frac{1}{|\mathcal{T}|}\sum_t T_\ell^{(t)}$$
+
+Each metric produces a **per-layer profile** aggregated over tokens via three windows: **max** (worst-case), **mean** (average), and **ans** (answer region).
 
 ## 📋 Results Summary
 
@@ -87,21 +109,21 @@ Each metric produces a per-layer profile aggregated over tokens via three window
 |:---|:---:|:---:|:---:|
 | Log-Prob (baseline) | 0.627 | 0.541 | 0.585 |
 | Static Rep (baseline) | 0.590 | 0.559 | 0.601 |
-| 🌀 Curvature | 0.750 | 0.747 | 0.698 |
-| ⚡ Jerk | 0.723 | 0.746 | 0.691 |
-| 🏃 Velocity | 0.734 | 0.765 | 0.696 |
-| 🛤️ Geodesic Dev | 0.692 | 0.747 | 0.652 |
-| 🔗 Token Coherence | 0.731 | 0.744 | 0.706 |
-| 🧭 **VANE (full)** | **0.759** | **0.793** | **0.711** |
+| Curvature | 0.750 | 0.747 | 0.698 |
+| Jerk | 0.723 | 0.746 | 0.691 |
+| Velocity | 0.734 | 0.765 | 0.696 |
+| Geodesic Dev | 0.692 | 0.747 | 0.652 |
+| Token Coherence | 0.731 | 0.744 | 0.706 |
+| 🌬️ **VANE (combined)** | **0.759** | **0.793** | **0.711** |
 
 ### 🎯 Selective Prediction (out-of-fold, GSM8K)
 
 | Coverage | Method | Llama-3-8B | Gemma-3-12B | Ministral-8B |
 |:---:|:---|:---:|:---:|:---:|
 | 100% | Baseline | 68.8% | 82.9% | 73.8% |
-| 70% | 🧭 VANE | 79.7% | 91.4% | 82.0% |
+| 70% | 🌬️ VANE | 79.7% | 91.4% | 82.0% |
 | 70% | Log-Prob | 63.2% | 81.7% | 71.6% |
-| 50% | 🧭 VANE | **84.1%** | **94.4%** | **86.0%** |
+| 50% | 🌬️ VANE | **84.1%** | **94.4%** | **86.0%** |
 | 50% | Log-Prob | 60.4% | 81.0% | 68.1% |
 
 ## 🚀 Quick Start
