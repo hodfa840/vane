@@ -186,11 +186,11 @@ Any HuggingFace causal LM that returns hidden states. Evaluated on:
 ## 📝 Citation
 
 ```bibtex
-@inproceedings{vane2025,
+@inproceedings{vane2026,
   title     = {VANE: Detecting LLM Reasoning Failures via Geometric Trajectory Analysis},
-  author    = {Hodfa, Ali},
-  booktitle = {Findings of the Association for Computational Linguistics: EMNLP 2025},
-  year      = {2025}
+  author    = {Fakhar, Hoda},
+  booktitle = {Findings of the Association for Computational Linguistics: EMNLP 2026},
+  year      = {2026}
 }
 ```
 

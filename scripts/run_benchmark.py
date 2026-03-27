@@ -104,7 +104,6 @@ def build_prompt(question: str, tokenizer) -> str:
     messages = [
         {"role": "system",
          "content": (
-             "You are an expert competition mathematician. "
              "Reason carefully and show every step. "
              "Always end with \\boxed{<answer>}."
          )},

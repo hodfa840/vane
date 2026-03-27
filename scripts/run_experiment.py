@@ -99,7 +99,7 @@ def extract_answer_gsm8k(text):
 
 def build_prompt(question, tokenizer):
     messages = [
-        {"role": "system", "content": "You are a math reasoning assistant. Think step by step."},
+        {"role": "system", "content": "Solve the following math problem step by step."},
         {"role": "user",   "content": question},
     ]
     try:
@@ -107,7 +107,7 @@ def build_prompt(question, tokenizer):
             messages, tokenize=False, add_generation_prompt=True
         )
     except Exception:
-        return f"User: {question}\nAssistant: Let's think step by step.\n"
+        return f"Problem: {question}\nSolution: Let's think step by step.\n"
 
 
 def setup_logger(log_path):
