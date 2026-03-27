@@ -65,7 +65,7 @@
   <img src="assets/fig_auroc_bar.png" width="700" alt="AUROC bar chart: VANE vs baselines">
 </p>
 
-<p align="center"><em>Every VANE trajectory metric individually outperforms log-probability and static representation baselines. The full VANE hybrid classifier achieves the highest AUROC.</em></p>
+<p align="center"><em>Every VANE trajectory metric individually outperforms log-probability and static representation baselines. The full VANE classifier achieves the highest AUROC.</em></p>
 
 ## 📐 The Five VANE Metrics
 
@@ -92,7 +92,7 @@ Each metric produces a per-layer profile aggregated over tokens via three window
 | 🏃 Velocity | 0.734 | 0.765 | 0.696 |
 | 🛤️ Geodesic Dev | 0.692 | 0.747 | 0.652 |
 | 🔗 Token Coherence | 0.731 | 0.744 | 0.706 |
-| 🧭 **VANE Hybrid** | **0.759** | **0.793** | **0.711** |
+| 🧭 **VANE (full)** | **0.759** | **0.793** | **0.711** |
 
 ### 🎯 Selective Prediction (out-of-fold, GSM8K)
 
